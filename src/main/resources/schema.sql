@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS numbers (id int not null primary key auto_increment, number int not null)
