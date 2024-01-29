@@ -29,7 +29,7 @@ class BathTest {
     private JobLauncherTestUtils jobLauncherTestUtils;
 
     @Autowired
-    Job orderNumbersJob;
+    Job sortNumbersInNaturalOrderJob;
 
     @Autowired
     Job cleanDatabaseJob;
@@ -47,7 +47,7 @@ class BathTest {
     @Order(1)
     void shouldRunOrderNumberJobWithSuccess() throws Exception {
 
-        jobLauncherTestUtils.setJob(orderNumbersJob);
+        jobLauncherTestUtils.setJob(sortNumbersInNaturalOrderJob);
 
         jobLauncherTestUtils.launchJob();
 

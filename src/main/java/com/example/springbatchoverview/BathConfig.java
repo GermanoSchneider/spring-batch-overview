@@ -32,20 +32,20 @@ public class BathConfig {
     }
 
     @Bean
-    Job orderNumbersJob(
+    Job sortNumbersInNaturalOrderJob(
             JobRepository jobRepository,
-            Step orderNumbersStep
+            Step sortNumbersInNaturalOrderStep
     ) {
 
-        return new JobBuilder("orderNumbersJob", jobRepository)
-                .start(orderNumbersStep)
+        return new JobBuilder("sortNumbersInNaturalOrderJob", jobRepository)
+                .start(sortNumbersInNaturalOrderStep)
                 .build();
     }
 
     @Bean
-    Step orderNumbersStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+    Step sortNumbersInNaturalOrderStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
 
-        return new StepBuilder("orderNumbersStep", jobRepository)
+        return new StepBuilder("sortNumbersInNaturalOrderStep", jobRepository)
                 .<Map<Integer, Integer>, Map<Integer, Integer>>chunk(10, platformTransactionManager)
                 .reader(cursorItemReader())
                 .processor(new OrderNumberProcessor())
