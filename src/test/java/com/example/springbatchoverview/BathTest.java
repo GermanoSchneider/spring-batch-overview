@@ -1,9 +1,7 @@
 package com.example.springbatchoverview;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
@@ -13,16 +11,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import static java.lang.Integer.parseInt;
+import static java.lang.String.join;
+import static java.util.Arrays.stream;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBatchTest
 @SpringBootTest
 @EnableAutoConfiguration
-@TestMethodOrder(OrderAnnotation.class)
 class BathTest {
 
     @Autowired
@@ -31,38 +29,28 @@ class BathTest {
     @Autowired
     Job sortNumbersInNaturalOrderJob;
 
-    @Autowired
-    Job cleanDatabaseJob;
-
     private static JdbcTemplate JDBC_TEMPLATE;
+
+    private final Set<Integer> expectedNumbers = new HashSet<>();
 
     @BeforeAll
     static void before(@Autowired DataSource dataSource) {
 
         JDBC_TEMPLATE = new JdbcTemplate(dataSource);
-        fillDatabase();
     }
 
     @Test
-    @Order(1)
-    void shouldRunOrderNumberJobWithSuccess() throws Exception {
+    void shouldRunSortNumbersInNaturalOrderJobWithSuccess() throws Exception {
+
+        fillDatabase();
+
+        sortExpectedNumbersInNaturalOrder(getNumbers());
 
         jobLauncherTestUtils.setJob(sortNumbersInNaturalOrderJob);
 
         jobLauncherTestUtils.launchJob();
 
-        assertEquals(100, getNumbers().size());
-    }
-
-    @Test
-    @Order(2)
-    void shouldRunCleanDatabaseJobWithSuccess() throws Exception {
-
-        jobLauncherTestUtils.setJob(cleanDatabaseJob);
-
-        jobLauncherTestUtils.launchJob();
-
-        assertEquals(0, getNumbers().size());
+        assertThat(expectedNumbers).hasSameElementsAs(getNumbers());
     }
 
     private List<Integer> getNumbers() {
@@ -70,15 +58,31 @@ class BathTest {
         return JDBC_TEMPLATE.queryForList("SELECT number FROM numbers", Integer.class);
     }
 
-    private static void fillDatabase() {
+    private void fillDatabase() {
 
-        for (int index = 0; index < 100; index++) {
+        for (int index = 0; index < 1000; index++) {
 
             Random random = new Random();
 
-            int randomNumber = random.nextInt(1000, 10000);
+            int randomNumber = random.nextInt(0, 10000);
 
-            JDBC_TEMPLATE.update("INSERT INTO numbers (number) VALUES (?)", randomNumber);
+            JDBC_TEMPLATE.execute("INSERT INTO numbers (number) VALUES " + randomNumber);
+        }
+    }
+
+    private void sortExpectedNumbersInNaturalOrder(List<Integer> numbers) {
+
+        for (Integer number : numbers) {
+
+            List<String> orderedNumber = new ArrayList<>(stream(number.toString()
+                    .split(""))
+                    .toList());
+
+            orderedNumber.sort(Comparator.naturalOrder());
+
+            Integer newValue = parseInt(join("", orderedNumber));
+
+            expectedNumbers.add(newValue);
         }
     }
 }

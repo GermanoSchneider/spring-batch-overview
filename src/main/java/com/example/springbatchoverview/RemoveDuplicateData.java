@@ -7,16 +7,18 @@ import org.springframework.batch.repeat.RepeatStatus;
 
 import javax.sql.DataSource;
 
-public class CleanDatabase extends StepConfig implements Tasklet {
+public class RemoveDuplicateData extends StepConfig implements Tasklet {
 
-    public CleanDatabase(DataSource dataSource) {
+    public RemoveDuplicateData(DataSource dataSource) {
         super(dataSource);
     }
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 
-        jdbcTemplate.execute("DELETE FROM numbers");
+        String sql = "DELETE FROM numbers t1 WHERE t1.id > (SELECT MIN(t2.id) FROM numbers t2 WHERE t1.number = t2.number)";
+
+        jdbcTemplate.execute(sql);
 
         return RepeatStatus.FINISHED;
     }

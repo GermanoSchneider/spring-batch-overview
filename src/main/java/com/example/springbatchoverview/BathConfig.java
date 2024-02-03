@@ -21,24 +21,15 @@ public class BathConfig {
     private DataSource dataSource;
 
     @Bean
-    Job cleanDatabaseJob(
-            JobRepository jobRepository,
-            Step cleanDatabaseStep
-    ) {
-
-        return new JobBuilder("cleanDatabaseJob", jobRepository)
-                .start(cleanDatabaseStep)
-                .build();
-    }
-
-    @Bean
     Job sortNumbersInNaturalOrderJob(
             JobRepository jobRepository,
-            Step sortNumbersInNaturalOrderStep
+            Step sortNumbersInNaturalOrderStep,
+            Step removeDuplicateDataStep
     ) {
 
         return new JobBuilder("sortNumbersInNaturalOrderJob", jobRepository)
                 .start(sortNumbersInNaturalOrderStep)
+                .next(removeDuplicateDataStep)
                 .build();
     }
 
@@ -48,18 +39,18 @@ public class BathConfig {
         return new StepBuilder("sortNumbersInNaturalOrderStep", jobRepository)
                 .<Map<Integer, Integer>, Map<Integer, Integer>>chunk(10, platformTransactionManager)
                 .reader(cursorItemReader())
-                .processor(new OrderNumberProcessor())
+                .processor(new SortNumberProcessor())
                 .writer(new NumberWriter(dataSource))
                 .build();
     }
 
     @Bean
-    Step cleanDatabaseStep(
+    Step removeDuplicateDataStep(
             JobRepository jobRepository,
             PlatformTransactionManager platformTransactionManager
     ) {
-        return new StepBuilder("cleanDatabaseStep", jobRepository)
-                .tasklet(new CleanDatabase(dataSource), platformTransactionManager)
+        return new StepBuilder("removeDuplicateDataStep", jobRepository)
+                .tasklet(new RemoveDuplicateData(dataSource), platformTransactionManager)
                 .build();
     }
 

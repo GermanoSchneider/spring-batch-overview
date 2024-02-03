@@ -8,7 +8,7 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.join;
 import static java.util.Arrays.stream;
 
-public class OrderNumberProcessor implements ItemProcessor<Map<Integer, Integer>, Map<Integer, Integer>> {
+public class SortNumberProcessor implements ItemProcessor<Map<Integer, Integer>, Map<Integer, Integer>> {
 
     @Override
     public Map<Integer, Integer> process(Map<Integer, Integer> item) throws Exception {
